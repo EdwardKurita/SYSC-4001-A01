@@ -1,8 +1,31 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-//function for file reading
 
-//function for value display
+//each line contains the instruction, followed by
+
+
+typedef struct LINE line;
+
+typedef struct NODE node;
+
+//using a linked list in order to hold/execute all process in order
+//each node is a new line of the program
+struct NODE {
+    line *cur_line;
+    struct NODE *next;
+};
+
+struct LINE {
+    char activity[10];
+    int address;
+    int time;
+};
+
+line create_line(char *)
+
+
 
 int main(void) {
     //pseudocode commenting:
@@ -13,6 +36,10 @@ int main(void) {
         //file for writing the output to
         //int mode variable
         //variable for the loop instance
+    FILE *file1 = fopen("trace.txt","r");
+    FILE *file2 = fopen("vector_table.txt","r");
+    FILE *file3 = fopen("execution.txt","w");
+    int mode = 1; //starting in user mode
 
     //set up a 2D string array for each file
         //file 1
