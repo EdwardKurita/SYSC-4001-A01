@@ -2,68 +2,75 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-//each line contains the instruction, followed by
-
-
-typedef struct LINE line;
-
-typedef struct NODE node;
-
-//using a linked list in order to hold/execute all process in order
-//each node is a new line of the program
-struct NODE {
-    line *cur_line;
-    struct NODE *next;
-};
-
-struct LINE {
-    char activity[10];
-    int address;
+//linked list for storing trace
+typedef struct NODE {
+    char *activity;
+    int interrupt_number;
     int time;
-};
+    struct NODE *next;
+} line;
 
-line create_line(char *)
+//linked list for storing trace (have to write function for parsing hex)
+typedef struct VECT {
+    int interrupt_number;
+    int value;
+    struct VECT *next;
+} vect;
 
+//function prototyping
+line *create_line(char *full_line);
+line *add_to_process(line *node, line *head);
+line *read_file(char *filename);
 
-
-int main(void) {
-    //pseudocode commenting:
-
-    //initialize variables
-        //file for reading from the vector table
-        //file for reading the input file
-        //file for writing the output to
-        //int mode variable
-        //variable for the loop instance
-    FILE *file1 = fopen("trace.txt","r");
-    FILE *file2 = fopen("vector_table.txt","r");
-    FILE *file3 = fopen("execution.txt","w");
-    int mode = 1; //starting in user mode
-
-    //set up a 2D string array for each file
-        //file 1
-        //file 2
-
-    //set up the third file for writing
-
-    //while loop for repeating the code until EOF
-
-        //read_from_sensor() aka reading from the input txt file, I guess we'll do it so it reads one line of the file per loop?
-            //this needs to be able to read all the lines of the code at once, from CPU to END_IO, so maybe hard code it to read return 3 lines of the string array?
-
-        //calculate the value that needs to be displayed from y
-            //input of Sting array,
-
-        //display the value
-
-        //loop to EOF
+//nothing here yet
+int main(void){
 
     return 0;
 }
 
-//function for file reading
-    //local variables:
-        //3d string array (using code block, line, part of line, sectioning).
+//creating a new line from the trace file
+line *create_line(char *full_line) {
+    //allocating memory for the line
+    line *new_line = (line *)malloc(sizeof(line));
 
-//function for value display
+    //allocating memory for the activity
+    new_line->activity = malloc(10 * sizeof(char));
+
+    //getting the activity from the line
+    new_line->activity = strtok(full_line, " ");
+
+    if (strcmp(new_line->activity, "CPU,") == 0) {
+        //removing appended comma from CPU.
+        new_line->activity[4] = '\0';
+        //setting the interrupt_number to NULL for CPU lines because there is no interrupt in this step.
+        new_line->interrupt_number = NULL;
+    } else {
+        //using comma delimiter to get the interrupt_number for SYSCALL and END_IO
+        new_line->interrupt_number = atoi(strtok(NULL, ","));
+    }
+    //getting the time for each line
+    new_line->time = atoi(strtok(NULL, " "));
+
+    new_line->next = NULL;
+
+    return new_line;
+}
+
+//function to add each line to the process in order
+line *add_to_process(line *node, line *head) {
+    line *curr = head;
+    if (head == NULL) {
+        head = node;
+    } else {
+        while (curr->next != NULL) {
+            curr = curr->next;
+        }
+        curr->next = node;
+    }
+    return head;
+}
+
+//function to read the trace file and add each process to the trace linked list
+line *read_file(char *filename) {
+    FILE
+}
