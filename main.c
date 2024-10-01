@@ -107,7 +107,7 @@ line_t *read_file(char *filename) {
 //function that controls the simulation.
 void simulate(line_t *process, char **vector_table) {
     line_t *cur_line = process;
-    bool flag = false;
+    bool mode = false;
     int counter = 0;
     int rand1, rand2, rand3, rand4;
 
@@ -127,9 +127,9 @@ void simulate(line_t *process, char **vector_table) {
             exit(1);
         }
 
-        if (strcmp(cur_line->activity, "CPU") == 0 && !flag) {
+        if (strcmp(cur_line->activity, "CPU") == 0 && !mode) {
 
-            flag = true;
+            mode = true;
             rand1 = random_num(3, 1);
 
             printf("%d, %d, CPU execution\n", counter, cur_line->time);
@@ -144,7 +144,7 @@ void simulate(line_t *process, char **vector_table) {
             fprintf(execution, "%d, %d, context saved\n", counter, rand1);
             counter += rand1;
 
-        } else if (strcmp(cur_line->activity, "CPU") == 0 && flag) {
+        } else if (strcmp(cur_line->activity, "CPU") == 0 && mode) {
 
             rand1 = random_num(3, 1);
 
@@ -188,7 +188,7 @@ void simulate(line_t *process, char **vector_table) {
 
         } else if (strcmp(cur_line->activity, "END_IO") == 0) {
 
-            flag = false;
+            mode = false;
 
             counter = LOAD_PC(vector_table, counter, cur_line, execution);
 
@@ -224,8 +224,8 @@ int LOAD_PC(char **vector_table, int counter, line_t *cur_line, FILE *execution)
 
     char PC[7] = "";
 
-    printf("%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, &vector_table[cur_line->interrupt_number]);
-    fprintf(execution, "%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, &vector_table[cur_line->interrupt_number]);
+    printf("%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
+    fprintf(execution, "%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
     counter++;
 
     strcpy(PC, vector_table[cur_line->interrupt_number]);
