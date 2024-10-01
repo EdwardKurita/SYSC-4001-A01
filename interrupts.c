@@ -110,44 +110,24 @@ void simulate(line_t *process, char **vector_table) {
             exit(1);
         }
 
-        if (strcmp(cur_line->activity, "CPU") == 0 && !mode) {
-
-            mode = true;
-            rand1 = random_num(3, 1);
-
+        if (strcmp(cur_line->activity, "CPU") == 0) {
             printf("%d, %d, CPU execution\n", counter, cur_line->time);
             fprintf(execution, "%d, %d, CPU execution\n", counter, cur_line->time);
             counter += cur_line->time;
 
+        } else if (strcmp(cur_line->activity, "SYSCALL") == 0) {
+
+            mode = false;
             printf("%d, %d, switch to kernel mode\n", counter, 1);
             fprintf(execution, "%d, %d, switch to kernel mode\n", counter, 1);
             counter++;
-
-            printf("%d, %d, context saved\n", counter, rand1);
-            fprintf(execution, "%d, %d, context saved\n", counter, rand1);
-            counter += rand1;
-
-        } else if (strcmp(cur_line->activity, "CPU") == 0 && mode) {
 
             rand1 = random_num(3, 1);
-
-            printf("%d, %d, check priority of interrupt\n", counter, 1);
-            fprintf(execution, "%d, %d, check priority of interrupt\n", counter, 1);
-            counter++;
-
-            printf("%d, %d, check if masked\n", counter , 1);
-            fprintf(execution, "%d, %d, check if masked\n", counter , 1);
-            counter++;
-
-            printf("%d, %d, switch to kernel mode\n", counter, 1);
-            fprintf(execution, "%d, %d, switch to kernel mode\n", counter, 1);
-            counter++;
-
             printf("%d, %d, context saved\n", counter, rand1);
             fprintf(execution, "%d, %d, context saved\n", counter, rand1);
             counter += rand1;
 
-        } else if (strcmp(cur_line->activity, "SYSCALL") == 0) {
+            counter = LOAD_PC(vector_table, counter, cur_line, execution);
 
             rand2 = random_num(cur_line->time / 2 - 10, 10);
             rand3 = random_num(cur_line->time / 2 - 10, 10);
@@ -169,9 +149,28 @@ void simulate(line_t *process, char **vector_table) {
             fprintf(execution, "%d, %d, IRET\n", counter, 1);
             counter++;
 
+            mode = true;
+
         } else if (strcmp(cur_line->activity, "END_IO") == 0) {
 
+            rand1 = random_num(3, 1);
+
+            printf("%d, %d, check priority of interrupt\n", counter, 1);
+            fprintf(execution, "%d, %d, check priority of interrupt\n", counter, 1);
+            counter++;
+
+            printf("%d, %d, check if masked\n", counter , 1);
+            fprintf(execution, "%d, %d, check if masked\n", counter , 1);
+            counter++;
+
             mode = false;
+            printf("%d, %d, switch to kernel mode\n", counter, 1);
+            fprintf(execution, "%d, %d, switch to kernel mode\n", counter, 1);
+            counter++;
+
+            printf("%d, %d, context saved\n", counter, rand1);
+            fprintf(execution, "%d, %d, context saved\n", counter, rand1);
+            counter += rand1;
 
             counter = LOAD_PC(vector_table, counter, cur_line, execution);
 
@@ -182,6 +181,8 @@ void simulate(line_t *process, char **vector_table) {
             printf("%d, %d, IRET\n", counter, 1);
             fprintf(execution, "%d, %d, IRET\n", counter, 1);
             counter++;
+
+            mode = true;
 
         } else {
 
