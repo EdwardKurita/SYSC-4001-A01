@@ -9,8 +9,8 @@
 386, 1, check if masked
 387, 1, switch to kernel mode
 388, 2, context saved
-390, 1, find vector 3 in memory position 0x6
-391, 1, load address 0X0F73 into PC
+390, 1, find vector 21 in memory position 0x2adff8b8
+391, 1, load address 0X057E into PC
 392, 220, END_IO
 612, 1, IRET
 613, 74, CPU execution
@@ -24,7 +24,7 @@
 913, 1, check if masked
 914, 1, switch to kernel mode
 915, 1, context saved
-916, 1, find vector 17 in memory position 0x22
+916, 1, find vector 17 in memory position 0x2adff898
 917, 1, load address 0X055D into PC
 918, 298, END_IO
 1216, 1, IRET
@@ -39,7 +39,7 @@
 1622, 1, check if masked
 1623, 1, switch to kernel mode
 1624, 3, context saved
-1627, 1, find vector 27 in memory position 0x36
+1627, 1, find vector 27 in memory position 0x2adff8e8
 1628, 1, load address CPU into PC
 1629, 301, END_IO
 1930, 1, IRET
@@ -54,7 +54,7 @@
 2231, 1, check if masked
 2232, 1, switch to kernel mode
 2233, 3, context saved
-2236, 1, find vector 22 in memory position 0x2c
+2236, 1, find vector 22 in memory position 0x2adff8c0
 2237, 1, load address 0X062A into PC
 2238, 154, END_IO
 2392, 1, IRET
@@ -69,7 +69,7 @@
 2785, 1, check if masked
 2786, 1, switch to kernel mode
 2787, 1, context saved
-2788, 1, find vector 16 in memory position 0x20
+2788, 1, find vector 16 in memory position 0x2adff890
 2789, 1, load address 0X0271 into PC
 2790, 276, END_IO
 3066, 1, IRET
@@ -84,7 +84,7 @@
 3207, 1, check if masked
 3208, 1, switch to kernel mode
 3209, 1, context saved
-3210, 1, find vector 24 in memory position 0x30
+3210, 1, find vector 24 in memory position 0x2adff8d0
 3211, 1, load address 0X07CF into PC
 3212, 333, END_IO
 3545, 1, IRET
