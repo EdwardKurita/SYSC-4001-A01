@@ -1,5 +1,6 @@
 #ifndef HEADERS_H
 #define HEADERS_H
+#include <stdio.h>
 
 typedef struct NODE {
     char activity[50];
