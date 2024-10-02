@@ -6,8 +6,7 @@
 #include <ctype.h>
 #include "interrupts.h"
 
-int main(int argc, char **argv){
-
+int main(int argc, char **argv) {
     char *vector_table[25] = {  "0X0282", "0X0A98", "0X0C7F", "0X0F73", "0X0B2A",
                                 "0X0778", "0X0C8B", "0X021A", "0X0C44", "0X04B7",
                                 "0X0BB1", "0X0E6E", "0X0640", "0X024A", "0X0BFD",
@@ -19,6 +18,9 @@ int main(int argc, char **argv){
 
     if (argc == 0) {
         printf("No trace file detected.");
+        exit(1);
+    } else if (argc > 2) {
+        printf("Too many arguments");
         exit(1);
     } else {
         char *check = argv[1];
