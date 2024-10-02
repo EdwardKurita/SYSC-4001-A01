@@ -12,10 +12,11 @@ typedef struct NODE {
 line_t *create_line(char *full_line);
 line_t *add_to_process(line_t *node, line_t *head);
 line_t *read_file(char *filename);
-void simulate(line_t *process, char **vector_table);
+void simulate(line_t *process, char **vector_table, char *output_filename);
 int random_num(int max, int min);
 int LOAD_PC(char **vector_table, int counter, line_t *cur_line, FILE *execution);
 void cleanup(line_t *cur_line);
 void write_execution(char *message);
+void check_vector_table(line_t * cur_line, FILE *execution);
 
 #endif

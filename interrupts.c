@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
+#include <ctype.h>
 #include "interrupts.h"
 
-int main(void){
+int main(int argc, char **argv){
 
     char *vector_table[25] = {  "0X0282", "0X0A98", "0X0C7F", "0X0F73", "0X0B2A",
                                 "0X0778", "0X0C8B", "0X021A", "0X0C44", "0X04B7",
@@ -12,11 +14,29 @@ int main(void){
                                 "0X0C6C", "0X0271", "0X055D", "0X05FB", "0X001B",
                                 "0X05F1", "0X057E", "0X062A", "0X03D5", "0X07CF"   };
 
-    line_t *trace_process = read_file("C:\\Users\\phant\\CLionProjects\\SYSC-4001-A01\\trace.txt");
+    int num;
+    char exec[30];
+
+    if (argc == 0) {
+        printf("No trace file detected.");
+        exit(1);
+    } else {
+        char *check = argv[1];
+        while (*check) {
+            if (isdigit(*check)) {
+                num = strtol(check, &check, 10);
+            } else {
+                check++;
+            }
+        }
+        sprintf(exec, "execution%d.txt", num);
+    }
+
+    line_t *trace_process = read_file(argv[1]);
 
     line_t *head = trace_process;
 
-    simulate(trace_process, vector_table);
+    simulate(trace_process, vector_table, exec);
 
     cleanup(head);
 
@@ -68,12 +88,12 @@ line_t *read_file(char *filename) {
     char str[50];
     line_t *process_list = NULL;
 
-    printf("%s\n", filename);
+    printf("filename: %s\n", filename);
 
     FILE *file = fopen(filename, "r");
 
     if (file == NULL) {
-        printf("Error opening file");
+        printf("Error opening file1");
         exit(1);
     }
 
@@ -88,22 +108,28 @@ line_t *read_file(char *filename) {
 }
 
 //function that controls the simulation.
-void simulate(line_t *process, char **vector_table) {
+void simulate(line_t *process, char **vector_table, char *output_filename) {
     line_t *cur_line = process;
     bool mode = false;
     int counter = 0;
-    int rand1, rand2, rand3, rand4;
+    int overhead = 0;
+    int rand1 = 0;
+    int rand2 = 0;
+    int rand3 = 0;
+    int rand4 = 0;
 
-    FILE *execution = fopen("C:\\Users\\phant\\CLionProjects\\SYSC-4001-A01\\execution.txt", "w");
+    FILE *execution = fopen(output_filename, "w");
 
     if (execution == NULL) {
         printf("Error opening file");
         exit(1);
     }
 
+    srand(time(NULL));
+
     while (cur_line != NULL) {
 
-        if (cur_line <= 0) {
+        if (!(cur_line->time > 0 && cur_line->time <= 400)) {
             printf("Duration of process is invalid.");
             fprintf(execution, "Duration of process is invalid\nProcess Exit");
             fclose(execution);
@@ -118,16 +144,22 @@ void simulate(line_t *process, char **vector_table) {
         } else if (strcmp(cur_line->activity, "SYSCALL") == 0) {
 
             mode = false;
+
             printf("%d, %d, switch to kernel mode\n", counter, 1);
             fprintf(execution, "%d, %d, switch to kernel mode\n", counter, 1);
             counter++;
+            overhead++;
 
             rand1 = random_num(3, 1);
+
             printf("%d, %d, context saved\n", counter, rand1);
             fprintf(execution, "%d, %d, context saved\n", counter, rand1);
             counter += rand1;
+            overhead += rand1;
 
+            check_vector_table(cur_line, execution);
             counter = LOAD_PC(vector_table, counter, cur_line, execution);
+            overhead += 2;
 
             rand2 = random_num(cur_line->time / 2 - 10, 10);
             rand3 = random_num(cur_line->time / 2 - 10, 10);
@@ -148,30 +180,36 @@ void simulate(line_t *process, char **vector_table) {
             printf("%d, %d, IRET\n", counter, 1);
             fprintf(execution, "%d, %d, IRET\n", counter, 1);
             counter++;
+            overhead++;
 
             mode = true;
 
         } else if (strcmp(cur_line->activity, "END_IO") == 0) {
 
-            rand1 = random_num(3, 1);
-
             printf("%d, %d, check priority of interrupt\n", counter, 1);
             fprintf(execution, "%d, %d, check priority of interrupt\n", counter, 1);
             counter++;
+            overhead++;
 
             printf("%d, %d, check if masked\n", counter , 1);
             fprintf(execution, "%d, %d, check if masked\n", counter , 1);
             counter++;
+            overhead++;
 
             mode = false;
             printf("%d, %d, switch to kernel mode\n", counter, 1);
             fprintf(execution, "%d, %d, switch to kernel mode\n", counter, 1);
             counter++;
+            overhead++;
+
+            rand1 = random_num(3, 1);
 
             printf("%d, %d, context saved\n", counter, rand1);
             fprintf(execution, "%d, %d, context saved\n", counter, rand1);
             counter += rand1;
+            overhead += rand1;
 
+            check_vector_table(cur_line, execution);
             counter = LOAD_PC(vector_table, counter, cur_line, execution);
 
             printf("%d, %d, END_IO\n", counter, cur_line->time);
@@ -181,6 +219,7 @@ void simulate(line_t *process, char **vector_table) {
             printf("%d, %d, IRET\n", counter, 1);
             fprintf(execution, "%d, %d, IRET\n", counter, 1);
             counter++;
+            overhead++;
 
             mode = true;
 
@@ -197,6 +236,8 @@ void simulate(line_t *process, char **vector_table) {
 
     }
 
+    printf("\n\nTotal System Overhead: %dms\n\n", overhead);
+
     fclose(execution);
 }
 
@@ -208,8 +249,8 @@ int LOAD_PC(char **vector_table, int counter, line_t *cur_line, FILE *execution)
 
     char PC[7] = "";
 
-    printf("%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
-    fprintf(execution, "%d, %d, find vector %d in memory position 0x%x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
+    printf("%d, %d, find vector %d in memory position 0x%04x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
+    fprintf(execution, "%d, %d, find vector %d in memory position 0x%04x\n", counter, 1, cur_line->interrupt_number, 2*cur_line->interrupt_number);
     counter++;
 
     strcpy(PC, vector_table[cur_line->interrupt_number]);
@@ -230,4 +271,13 @@ void cleanup(line_t *cur_line) {
         free(delete_line);
     }
 
+}
+
+void check_vector_table(line_t *cur_line, FILE *execution) {
+    if (cur_line->interrupt_number < 0 || cur_line->interrupt_number > 24) {
+        printf("Interrupt number outside the bounds of the vector table");
+        fprintf(execution, "UInterrupt number outside the bounds of the vector table\nProcess exit");
+        fclose(execution);
+        exit(1);
+    }
 }
