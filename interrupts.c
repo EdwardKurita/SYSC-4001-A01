@@ -7,23 +7,27 @@
 #include "interrupts.h"
 
 int main(int argc, char **argv) {
+
+    //hardcoded vector table
     char *vector_table[25] = {  "0X0282", "0X0A98", "0X0C7F", "0X0F73", "0X0B2A",
                                 "0X0778", "0X0C8B", "0X021A", "0X0C44", "0X04B7",
                                 "0X0BB1", "0X0E6E", "0X0640", "0X024A", "0X0BFD",
                                 "0X0C6C", "0X0271", "0X055D", "0X05FB", "0X001B",
                                 "0X05F1", "0X057E", "0X062A", "0X03D5", "0X07CF"   };
-
     int num;
     char exec[30];
 
-    if (argc == 0) {
+    if (argc == 0) { //checking if there is an additional argument that contains the trace file in the command line
         printf("No trace file detected.");
         exit(1);
-    } else if (argc > 2) {
+    } else if (argc > 2) { //making sure there aren't any additional arguments
         printf("Too many arguments");
         exit(1);
-    } else {
+    } else { //if there is a file name in the test it allows the program to progress
+
         char *check = argv[1];
+
+        //loop that goes through each character in the filename to extract the n from "trace[n].txt"
         while (*check) {
             if (isdigit(*check)) {
                 num = strtol(check, &check, 10);
@@ -31,15 +35,20 @@ int main(int argc, char **argv) {
                 check++;
             }
         }
+        //names the output file appropriately in accordance to the number of the trace file
         sprintf(exec, "execution%d.txt", num);
     }
 
+    //reads in the trace file to a linked list in order to sequentially execute the program
     line_t *trace_process = read_file(argv[1]);
 
+    //saves the head of the trace process linked list in order to free the memory used by the linked list later.
     line_t *head = trace_process;
 
+    //starts the simulation
     simulate(trace_process, vector_table, exec);
 
+    //cleans up the heap memory used by the program stored in the trace linked list
     cleanup(head);
 
     return 0;
@@ -56,10 +65,11 @@ line_t *create_line(char *full_line) {
     if (strcmp(new_line->activity, "CPU,") == 0) {
         //removing appended comma from CPU.
         new_line->activity[3] = '\0';
+
         //setting the interrupt_number to NULL for CPU lines because there is no interrupt in this step.
         new_line->interrupt_number = 0;
     } else {
-        //using comma delimiter to get the interrupt_number for SYSCALL and END_IO
+        //using comma as delimiter to get the interrupt_number for SYSCALL and END_IO
         new_line->interrupt_number = atoi(strtok(NULL, ", "));
     }
     //getting the time for each line
@@ -72,7 +82,9 @@ line_t *create_line(char *full_line) {
 
 //function to add each line to the process in order
 line_t *add_to_process(line_t *node, line_t *head) {
+
     line_t *curr = head;
+
     if (head == NULL) {
         head = node;
     } else {
@@ -87,10 +99,9 @@ line_t *add_to_process(line_t *node, line_t *head) {
 
 //function to read the trace file and add each process to the trace linked list
 line_t *read_file(char *filename) {
+
     char str[50];
     line_t *process_list = NULL;
-
-    printf("filename: %s\n", filename);
 
     FILE *file = fopen(filename, "r");
 
@@ -100,8 +111,8 @@ line_t *read_file(char *filename) {
     }
 
     while(fgets(str, 50, file)) {
-        line_t *cur_line = create_line(str);
-        process_list = add_to_process(cur_line, process_list);
+        line_t *cur_line = create_line(str); //creates a new node that contains the command, interrupt number, and time of each line
+        process_list = add_to_process(cur_line, process_list); //adds each node to the linked list, and returns head so iteration isnt broken
     }
 
     fclose(file);
@@ -111,8 +122,9 @@ line_t *read_file(char *filename) {
 
 //function that controls the simulation.
 void simulate(line_t *process, char **vector_table, char *output_filename) {
+
     line_t *cur_line = process;
-    bool mode = false;
+    bool mode = false; //mode bit to alternate between kernel and user mode
     int counter = 0;
     int overhead = 0;
     int rand1 = 0;
@@ -120,6 +132,7 @@ void simulate(line_t *process, char **vector_table, char *output_filename) {
     int rand3 = 0;
     int rand4 = 0;
 
+    //opening the output file to write
     FILE *execution = fopen(output_filename, "w");
 
     if (execution == NULL) {
@@ -127,10 +140,11 @@ void simulate(line_t *process, char **vector_table, char *output_filename) {
         exit(1);
     }
 
+    //setting the time seed so random numbers are unique in each run of the code
     srand(time(NULL));
 
     while (cur_line != NULL) {
-
+        //checking that the time value of the current line is possible given constraints
         if (!(cur_line->time > 0 && cur_line->time <= 400)) {
             printf("Duration of process is invalid.");
             fprintf(execution, "Duration of process is invalid\nProcess Exit");
@@ -163,6 +177,7 @@ void simulate(line_t *process, char **vector_table, char *output_filename) {
             counter = LOAD_PC(vector_table, counter, cur_line, execution);
             overhead += 2;
 
+            //next three lines for generating random values that sum to the time given by the SYSCALL activity
             rand2 = random_num(cur_line->time / 2 - 10, 10);
             rand3 = random_num(cur_line->time / 2 - 10, 10);
             rand4 = cur_line->time - (rand2 + rand3);
@@ -226,7 +241,7 @@ void simulate(line_t *process, char **vector_table, char *output_filename) {
             mode = true;
 
         } else {
-
+            //if, for whatever reason, there is a command word that isn't recognized, the program ends.
             printf("Unexpected command");
             fprintf(execution, "Unexpected command encountered\nProcess exit");
             fclose(execution);
@@ -235,18 +250,19 @@ void simulate(line_t *process, char **vector_table, char *output_filename) {
         }
 
         cur_line = cur_line->next;
-
     }
-
+    //gives us the system overhead for program testing
     printf("\n\nTotal System Overhead: %dms\n\n", overhead);
 
     fclose(execution);
 }
 
+//function to generate random numbers whenever we need
 int random_num(int max, int min){
     return rand() % (max- min + 1) + min;
 }
 
+//loading the PC
 int LOAD_PC(char **vector_table, int counter, line_t *cur_line, FILE *execution) {
 
     char PC[7] = "";
@@ -263,6 +279,7 @@ int LOAD_PC(char **vector_table, int counter, line_t *cur_line, FILE *execution)
     return counter;
 }
 
+//cleanup function using a reference to head to remove the linked list from heap memory
 void cleanup(line_t *cur_line) {
 
     line_t *delete_line;
