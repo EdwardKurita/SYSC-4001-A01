@@ -1,4 +1,2 @@
-gcc interrupts.c interrupts.h
-./a.out "trace13.txt"
-rm a.out
-rm interrupts.h.gch
+gcc interrupts.c interrupts.h -o sim13
+./sim13 "trace13.txt"
