@@ -1,0 +1,3 @@
+0, 57, CPU execution
+Unexpected command encountered
+Process exit

@@ -1,0 +1,12 @@
+0, 57, CPU execution
+57, 1, switch to kernel mode
+58, 2, context saved
+60, 1, find vector 4 in memory position 0x0008
+61, 1, load address 0X0B2A into PC
+62, 78, SYSCALL: run the ISR
+140, 135, transfer data
+275, 170, check for errors
+445, 1, IRET
+446, 24, CPU execution
+Unexpected command encountered
+Process exit

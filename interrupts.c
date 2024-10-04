@@ -9,11 +9,12 @@
 int main(int argc, char **argv) {
 
     //hardcoded vector table
-    char *vector_table[25] = {  "0X0282", "0X0A98", "0X0C7F", "0X0F73", "0X0B2A",
+    char *vector_table[26] = {  "0X0282", "0X0A98", "0X0C7F", "0X0F73", "0X0B2A",
                                 "0X0778", "0X0C8B", "0X021A", "0X0C44", "0X04B7",
                                 "0X0BB1", "0X0E6E", "0X0640", "0X024A", "0X0BFD",
                                 "0X0C6C", "0X0271", "0X055D", "0X05FB", "0X001B",
-                                "0X05F1", "0X057E", "0X062A", "0X03D5", "0X07CF"   };
+                                "0X05F1", "0X057E", "0X062A", "0X03D5", "0X07CF",
+                                "0x0321"                                            };
     int num;
     char exec[30];
 
@@ -293,9 +294,9 @@ void cleanup(line_t *cur_line) {
 }
 
 void check_vector_table(line_t *cur_line, FILE *execution) {
-    if (cur_line->interrupt_number < 0 || cur_line->interrupt_number > 24) {
+    if (cur_line->interrupt_number < 0 || cur_line->interrupt_number > 25) {
         printf("Interrupt number outside the bounds of the vector table");
-        fprintf(execution, "UInterrupt number outside the bounds of the vector table\nProcess exit");
+        fprintf(execution, "Interrupt number outside the bounds of the vector table\nProcess exit");
         fclose(execution);
         exit(1);
     }

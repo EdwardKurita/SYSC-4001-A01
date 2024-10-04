@@ -1,0 +1,11 @@
+0, 30, CPU execution
+30, 1, switch to kernel mode
+31, 2, context saved
+33, 1, find vector 4 in memory position 0x0008
+34, 1, load address 0X0B2A into PC
+35, 11, SYSCALL: run the ISR
+46, 123, transfer data
+169, 216, check for errors
+385, 1, IRET
+Duration of process is invalid
+Process Exit
